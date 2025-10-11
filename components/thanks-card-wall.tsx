@@ -8,6 +8,7 @@ import { Loader2, Plus } from "lucide-react";
 import Image from "next/image";
 import QRCode from "@/assets/QRcode/QR-thanks-card-new.png";
 import Link from "next/link";
+import { motion, AnimatePresence } from "framer-motion";
 
 interface ThanksCardWallProps {
   initialCards: ThanksCard[];
@@ -15,6 +16,7 @@ interface ThanksCardWallProps {
 }
 
 const CARDS_PER_PAGE = 12;
+const ANIMATION_DURATION = 3000; // 각 카드 애니메이션 지속 시간 (3초)
 
 export function ThanksCardWall({
   initialCards,
@@ -27,6 +29,11 @@ export function ThanksCardWall({
   const [loading, setLoading] = useState(false);
   const [hasMore, setHasMore] = useState(initialCards.length >= CARDS_PER_PAGE);
   const observerTarget = useRef<HTMLDivElement>(null);
+
+  // 카드 생성 큐 관리
+  const [animationQueue, setAnimationQueue] = useState<string[]>([]);
+  const [isAnimating, setIsAnimating] = useState(false);
+  const animationTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const loadMoreCards = useCallback(async () => {
     if (loading || !hasMore) return;
@@ -73,6 +80,28 @@ export function ThanksCardWall({
     };
   }, [loadMoreCards, hasMore, loading]);
 
+  // 큐에서 다음 애니메이션 실행
+  useEffect(() => {
+    if (animationQueue.length > 0 && !isAnimating) {
+      setIsAnimating(true);
+      const nextCardId = animationQueue[0];
+      setNewCardId(nextCardId);
+
+      // 애니메이션 완료 후 큐에서 제거하고 다음 애니메이션 준비
+      animationTimeoutRef.current = setTimeout(() => {
+        setNewCardId(null);
+        setIsAnimating(false);
+        setAnimationQueue((prev) => prev.slice(1));
+      }, ANIMATION_DURATION);
+    }
+
+    return () => {
+      if (animationTimeoutRef.current) {
+        clearTimeout(animationTimeoutRef.current);
+      }
+    };
+  }, [animationQueue, isAnimating]);
+
   useEffect(() => {
     const supabase = createClient();
 
@@ -85,9 +114,9 @@ export function ThanksCardWall({
           const newCard = payload.new as ThanksCard;
           setCards((prev) => [newCard, ...prev]);
           setTotalCount((prev) => prev + 1);
-          setNewCardId(newCard.id);
 
-          setTimeout(() => setNewCardId(null), 2000);
+          // 새 카드를 큐에 추가
+          setAnimationQueue((prev) => [...prev, newCard.id]);
         }
       )
       .subscribe();
@@ -99,6 +128,59 @@ export function ThanksCardWall({
 
   return (
     <>
+      {/* 딤 처리 오버레이 + 중앙 카드 강조 */}
+      <AnimatePresence mode="wait">
+        {newCardId && (
+          <motion.div
+            key="card-spotlight"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.5 }}
+            className="fixed inset-0 z-[100] flex items-center justify-center"
+            style={{ pointerEvents: "none" }}
+          >
+            {/* 딤 배경 */}
+            <div className="absolute inset-0 bg-black/60" />
+
+            {/* 중앙에 강조된 카드 */}
+            <div
+              className="relative z-10 w-full max-w-md lg:max-w-lg px-4"
+              style={{ pointerEvents: "auto" }}
+            >
+              {cards.find((card) => card.id === newCardId) && (
+                <ThanksCardItem
+                  card={cards.find((card) => card.id === newCardId)!}
+                  cardNumber={
+                    totalCount -
+                    cards.findIndex((card) => card.id === newCardId)
+                  }
+                  isNew={true}
+                />
+              )}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* 큐 대기 카드 개수 표시 */}
+      <AnimatePresence>
+        {animationQueue.length > 1 && (
+          <motion.div
+            key="queue-badge"
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            transition={{ duration: 0.3 }}
+            className="fixed top-4 left-1/2 transform -translate-x-1/2 z-[110] bg-amber-500 text-white px-6 py-3 rounded-full shadow-lg"
+          >
+            <p className="text-sm font-semibold">
+              새로운 카드 {animationQueue.length - 1}개가 더 있어요! 🎉
+            </p>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       <div className="min-h-screen flex flex-col">
         {/* Cards Section */}
         <div className="flex-1 flex flex-col lg:mr-80 xl:mr-96">
@@ -127,7 +209,7 @@ export function ThanksCardWall({
                   <ThanksCardItem
                     card={card}
                     cardNumber={totalCount - index}
-                    isNew={card.id === newCardId}
+                    isNew={false}
                   />
                 </div>
               </div>
@@ -155,7 +237,7 @@ export function ThanksCardWall({
                   <ThanksCardItem
                     card={card}
                     cardNumber={totalCount - index}
-                    isNew={card.id === newCardId}
+                    isNew={false}
                   />
                 </div>
               ))}
