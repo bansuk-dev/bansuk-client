@@ -33,21 +33,11 @@ export function ThanksCardDetail({ card }: ThanksCardDetailProps) {
         <div className="bg-white rounded-2xl shadow-lg overflow-hidden border border-stone-200">
           {/* Author Name at Top */}
           <div className="bg-gradient-to-r from-emerald-50 to-amber-50 px-5 sm:px-6 py-5 sm:py-6 border-b border-stone-200">
-            <div className="flex items-center gap-3">
-              <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-full bg-emerald-100 flex items-center justify-center">
-                <span className="text-lg sm:text-xl font-bold text-emerald-700">
-                  {card.name.charAt(0)}
-                </span>
-              </div>
-              <div>
-                <h2 className="text-xl sm:text-2xl font-bold text-stone-800">
-                  {card.name}
-                  <span className="text-lg sm:text-xl font-normal text-stone-600 ml-2">
-                    님
-                  </span>
-                </h2>
-                <p className="text-sm text-stone-500 mt-1">{formattedDate}</p>
-              </div>
+            <div>
+              <h2 className="text-xl sm:text-2xl font-bold text-stone-800">
+                {card.name}
+              </h2>
+              <p className="text-sm text-stone-500 mt-1">{formattedDate}</p>
             </div>
           </div>
 
