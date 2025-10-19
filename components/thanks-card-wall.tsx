@@ -243,12 +243,12 @@ export function ThanksCardWall({
           </div>
 
           {/* Desktop: Horizontal Scroll */}
-          <div className="hidden lg:block flex-1 overflow-x-auto px-4 sm:px-6 md:px-8 lg:px-10 xl:px-12 py-8">
+          <div className="hidden lg:block flex-1 overflow-x-auto px-4 sm:px-6 md:px-8 lg:px-10 xl:px-12 py-12 pb-20">
             <div className="flex gap-4 sm:gap-6 md:gap-7 lg:gap-8">
               {cards.map((card, index) => (
                 <div
                   key={card.id}
-                  className="flex-shrink-0 w-64 sm:w-72 md:w-80 lg:w-96"
+                  className="flex-shrink-0 w-64 sm:w-72 md:w-80 lg:w-80"
                 >
                   <ThanksCardItem
                     card={card}
