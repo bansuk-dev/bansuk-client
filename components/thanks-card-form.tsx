@@ -1,96 +1,103 @@
-"use client"
+"use client";
 
-import type React from "react"
+import type React from "react";
 
-import { useState } from "react"
-import { useRouter } from "next/navigation"
-import { createClient } from "@/lib/supabase/client"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
-import { Loader2, CheckCircle2, Camera } from "lucide-react"
-import Image from "next/image"
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { createClient } from "@/lib/supabase/client";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Loader2, CheckCircle2, Camera } from "lucide-react";
+import Image from "next/image";
 
 export function ThanksCardForm() {
-  const router = useRouter()
-  const [name, setName] = useState("")
-  const [title, setTitle] = useState("")
-  const [photoFile, setPhotoFile] = useState<File | null>(null)
-  const [photoPreview, setPhotoPreview] = useState<string | null>(null)
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const [isSuccess, setIsSuccess] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+  const router = useRouter();
+  const [name, setName] = useState("");
+  const [title, setTitle] = useState("");
+  const [photoFile, setPhotoFile] = useState<File | null>(null);
+  const [photoPreview, setPhotoPreview] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
+    const file = e.target.files?.[0];
     if (file) {
-      setPhotoFile(file)
-      const reader = new FileReader()
+      setPhotoFile(file);
+      const reader = new FileReader();
       reader.onloadend = () => {
-        setPhotoPreview(reader.result as string)
-      }
-      reader.readAsDataURL(file)
+        setPhotoPreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
     }
-  }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setError(null)
-
-    if (!name || !title || !photoFile) {
-      setError("모든 항목을 입력해주세요")
-      return
-    }
+    e.preventDefault();
+    setError(null);
 
     if (title.length > 50) {
-      setError("감사 제목은 50자 이내로 입력해주세요")
-      return
+      setError("감사 제목은 50자 이내로 입력해주세요");
+      return;
     }
 
-    setIsSubmitting(true)
+    setIsSubmitting(true);
 
     try {
-      const supabase = createClient()
+      const supabase = createClient();
+      let photoUrl = "/assets/default-image.jpg"; // 기본 이미지 경로
 
-      // Upload photo to Supabase Storage
-      const fileExt = photoFile.name.split(".").pop()
-      const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`
-      const filePath = `thanks-cards/${fileName}`
+      // 사진이 있는 경우에만 업로드
+      if (photoFile) {
+        // Upload photo to Supabase Storage
+        const fileExt = photoFile.name.split(".").pop();
+        const fileName = `${Date.now()}-${Math.random()
+          .toString(36)
+          .substring(7)}.${fileExt}`;
+        const filePath = `thanks-cards/${fileName}`;
 
-      const { error: uploadError } = await supabase.storage.from("photos").upload(filePath, photoFile)
+        const { error: uploadError } = await supabase.storage
+          .from("photos")
+          .upload(filePath, photoFile);
 
-      if (uploadError) {
-        throw new Error("사진 업로드에 실패했습니다")
+        if (uploadError) {
+          throw new Error("사진 업로드에 실패했습니다");
+        }
+
+        // Get public URL
+        const {
+          data: { publicUrl },
+        } = supabase.storage.from("photos").getPublicUrl(filePath);
+
+        photoUrl = publicUrl;
       }
-
-      // Get public URL
-      const {
-        data: { publicUrl },
-      } = supabase.storage.from("photos").getPublicUrl(filePath)
 
       // Insert thanks card record
-      const { error: insertError } = await supabase.from("thanks_cards").insert({
-        name,
-        title,
-        photo_url: publicUrl,
-      })
+      const { error: insertError } = await supabase
+        .from("thanks_cards")
+        .insert({
+          name,
+          title,
+          photo_url: photoUrl,
+        });
 
       if (insertError) {
-        throw new Error("감사 카드 생성에 실패했습니다")
+        throw new Error("감사 카드 생성에 실패했습니다");
       }
 
-      setIsSuccess(true)
+      setIsSuccess(true);
 
       // Redirect after success
       setTimeout(() => {
-        router.push("/thanks-card")
-      }, 2000)
+        router.push("/thanks-card");
+      }, 2000);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "오류가 발생했습니다")
-      setIsSubmitting(false)
+      setError(err instanceof Error ? err.message : "오류가 발생했습니다");
+      setIsSubmitting(false);
     }
-  }
+  };
 
   if (isSuccess) {
     return (
@@ -99,16 +106,21 @@ export function ThanksCardForm() {
         <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold text-stone-800 mb-2 sm:mb-3">
           감사 카드가 생성되었습니다!
         </h2>
-        <p className="text-base sm:text-lg text-stone-600">잠시 후 감사 벽으로 이동합니다...</p>
+        <p className="text-base sm:text-lg text-stone-600">
+          스크린에서 만들어진 카드를 확인해 주세요!
+        </p>
       </div>
-    )
+    );
   }
 
   return (
     <form onSubmit={handleSubmit} className="space-y-5 sm:space-y-6">
       <div className="space-y-2">
-        <Label htmlFor="name" className="text-stone-700 font-bold text-base sm:text-lg">
-          이름
+        <Label
+          htmlFor="name"
+          className="text-stone-700 font-bold text-base sm:text-lg"
+        >
+          이름 <span className="text-red-500">*</span>
         </Label>
         <Input
           id="name"
@@ -123,8 +135,14 @@ export function ThanksCardForm() {
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="title" className="text-stone-700 font-bold text-base sm:text-lg">
-          감사 제목 <span className="text-sm sm:text-base text-stone-500 font-normal">(최대 50자)</span>
+        <Label
+          htmlFor="title"
+          className="text-stone-700 font-bold text-base sm:text-lg"
+        >
+          감사 제목 <span className="text-red-500">*</span>{" "}
+          <span className="text-sm sm:text-base text-stone-500 font-normal">
+            (최대 50자)
+          </span>
         </Label>
         <Textarea
           id="title"
@@ -136,12 +154,20 @@ export function ThanksCardForm() {
           className="text-base sm:text-lg resize-none border-2 border-stone-300 focus:border-amber-500 leading-relaxed"
           disabled={isSubmitting}
         />
-        <p className="text-sm sm:text-base text-stone-500 text-right font-medium">{title.length}/50</p>
+        <p className="text-sm sm:text-base text-stone-500 text-right font-medium">
+          {title.length}/50
+        </p>
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="photo" className="text-stone-700 font-bold text-base sm:text-lg">
-          사진
+        <Label
+          htmlFor="photo"
+          className="text-stone-700 font-bold text-base sm:text-lg"
+        >
+          사진{" "}
+          <span className="text-sm sm:text-base text-stone-500 font-normal">
+            (선택사항)
+          </span>
         </Label>
         <div className="relative">
           <input
@@ -154,7 +180,11 @@ export function ThanksCardForm() {
           />
           <label
             htmlFor="photo"
-            className="flex flex-col items-center justify-center w-full h-48 sm:h-56 border-3 border-dashed border-stone-300 rounded-xl sm:rounded-2xl cursor-pointer hover:border-amber-500 hover:bg-amber-50/50 transition-all bg-stone-50"
+            className={`flex flex-col items-center justify-center w-full h-48 sm:h-56 rounded-xl sm:rounded-2xl cursor-pointer transition-all ${
+              photoPreview
+                ? "border-0"
+                : "border-3 border-dashed border-stone-300 hover:border-amber-500 hover:bg-amber-50/50 bg-stone-50"
+            }`}
           >
             {photoPreview ? (
               <div className="relative w-full h-full">
@@ -168,8 +198,12 @@ export function ThanksCardForm() {
             ) : (
               <div className="flex flex-col items-center gap-2 sm:gap-3">
                 <Camera className="w-12 h-12 sm:w-16 sm:h-16 text-amber-600" />
-                <p className="text-stone-700 font-bold text-base sm:text-lg">사진을 선택해주세요</p>
-                <p className="text-sm sm:text-base text-stone-500">클릭하여 업로드</p>
+                <p className="text-stone-700 font-bold text-base sm:text-lg">
+                  사진을 선택해주세요
+                </p>
+                <p className="text-sm sm:text-base text-stone-500">
+                  클릭하여 업로드
+                </p>
               </div>
             )}
           </label>
@@ -184,8 +218,8 @@ export function ThanksCardForm() {
 
       <Button
         type="submit"
-        className="w-full h-12 sm:h-14 text-lg sm:text-xl font-bold bg-amber-600 hover:bg-amber-700 text-white shadow-lg"
-        disabled={isSubmitting}
+        className="w-full h-12 sm:h-14 text-lg sm:text-xl font-bold bg-amber-600 hover:bg-amber-700 text-white shadow-lg disabled:bg-gray-400 disabled:cursor-not-allowed"
+        disabled={isSubmitting || !name.trim() || !title.trim()}
       >
         {isSubmitting ? (
           <>
@@ -197,5 +231,5 @@ export function ThanksCardForm() {
         )}
       </Button>
     </form>
-  )
+  );
 }

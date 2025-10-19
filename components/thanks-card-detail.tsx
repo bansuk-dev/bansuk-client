@@ -30,14 +30,16 @@ export function ThanksCardDetail({ card }: ThanksCardDetailProps) {
           </Button>
         </Link>
 
-        <div className="bg-white rounded-2xl shadow-lg overflow-hidden border border-stone-200">
+        <div className="bg-white/20 backdrop-blur-md rounded-2xl shadow-xl overflow-hidden border border-white/30">
           {/* Author Name at Top */}
-          <div className="bg-gradient-to-r from-emerald-50 to-amber-50 px-5 sm:px-6 py-5 sm:py-6 border-b border-stone-200">
+          <div className="bg-gradient-to-r from-emerald-100/40 to-amber-100/40 backdrop-blur-sm px-5 sm:px-6 py-5 sm:py-6 border-b border-white/20">
             <div>
-              <h2 className="text-xl sm:text-2xl font-bold text-stone-800">
+              <h2 className="text-xl sm:text-2xl font-bold text-stone-900 drop-shadow-sm">
                 {card.name}
               </h2>
-              <p className="text-sm text-stone-500 mt-1">{formattedDate}</p>
+              <p className="text-sm text-stone-700 mt-1 drop-shadow-sm">
+                {formattedDate}
+              </p>
             </div>
           </div>
 
@@ -53,8 +55,8 @@ export function ThanksCardDetail({ card }: ThanksCardDetailProps) {
           </div>
 
           {/* Title/Description at Bottom */}
-          <div className="px-5 sm:px-6 py-5 sm:py-6 bg-gradient-to-br from-white to-stone-50">
-            <p className="text-base sm:text-lg md:text-xl text-stone-700 leading-relaxed text-pretty font-medium">
+          <div className="px-5 sm:px-6 py-5 sm:py-6 bg-gradient-to-br from-white/40 to-stone-100/40 backdrop-blur-sm">
+            <p className="text-base sm:text-lg md:text-xl text-stone-900 leading-relaxed text-pretty font-medium drop-shadow-sm">
               {card.title}
             </p>
           </div>

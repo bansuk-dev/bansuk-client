@@ -94,13 +94,17 @@ export function ThanksCardWall({
         setAnimationQueue((prev) => prev.slice(1));
       }, ANIMATION_DURATION);
     }
+  }, [animationQueue, isAnimating]);
 
+  // 컴포넌트 언마운트 시에만 타이머 정리
+  useEffect(() => {
     return () => {
       if (animationTimeoutRef.current) {
         clearTimeout(animationTimeoutRef.current);
+        animationTimeoutRef.current = null;
       }
     };
-  }, [animationQueue, isAnimating]);
+  }, []);
 
   useEffect(() => {
     const supabase = createClient();
@@ -181,7 +185,15 @@ export function ThanksCardWall({
         )}
       </AnimatePresence>
 
-      <div className="min-h-screen flex flex-col">
+      <div
+        className="min-h-screen flex flex-col"
+        style={{
+          backgroundImage: `url('/images/bg-image.jpg')`,
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+          backgroundRepeat: "no-repeat",
+        }}
+      >
         {/* Cards Section */}
         <div className="flex-1 flex flex-col lg:mr-80 xl:mr-96">
           {/* Title - Centered in remaining width */}
