@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState, useRef, useCallback } from "react";
-import { createClient } from "@/lib/supabase/client";
 import type { ThanksCard } from "@/lib/types/thanks-card";
 import { ThanksCardItem } from "@/components/thanks-card-item";
 import { Loader2, Plus } from "lucide-react";
@@ -10,76 +9,25 @@ import QRCode from "@/assets/QRcode/QR-thanks-card-new.png";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 
-interface ThanksCardWallProps {
-  initialCards: ThanksCard[];
-  initialCount: number;
+interface TestThanksCardWallProps {
+  cards: ThanksCard[];
+  totalCount: number;
+  animationQueue: string[];
+  onAnimationComplete: (cardId: string) => void;
 }
 
-const CARDS_PER_PAGE = 12;
 const ANIMATION_DURATION = 3000; // 각 카드 애니메이션 지속 시간 (3초)
 
-export function ThanksCardWall({
-  initialCards,
-  initialCount,
-}: ThanksCardWallProps) {
-  const [cards, setCards] = useState<ThanksCard[]>(initialCards);
-  const [totalCount, setTotalCount] = useState(initialCount);
+export function TestThanksCardWall({
+  cards,
+  totalCount,
+  animationQueue,
+  onAnimationComplete,
+}: TestThanksCardWallProps) {
   const [newCardId, setNewCardId] = useState<string | null>(null);
-  const [page, setPage] = useState(1);
-  const [loading, setLoading] = useState(false);
-  const [hasMore, setHasMore] = useState(initialCards.length >= CARDS_PER_PAGE);
-  const observerTarget = useRef<HTMLDivElement>(null);
-
-  // 카드 생성 큐 관리
-  const [animationQueue, setAnimationQueue] = useState<string[]>([]);
   const [isAnimating, setIsAnimating] = useState(false);
   const [animationKey, setAnimationKey] = useState(0); // 애니메이션 키 추가
   const animationTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-
-  const loadMoreCards = useCallback(async () => {
-    if (loading || !hasMore) return;
-
-    setLoading(true);
-    const supabase = createClient();
-    const from = page * CARDS_PER_PAGE;
-    const to = from + CARDS_PER_PAGE - 1;
-
-    const { data, error } = await supabase
-      .from("thanks_cards")
-      .select("*")
-      .order("created_at", { ascending: false })
-      .range(from, to);
-
-    if (!error && data) {
-      setCards((prev) => [...prev, ...data]);
-      setPage((prev) => prev + 1);
-      setHasMore(data.length >= CARDS_PER_PAGE);
-    }
-
-    setLoading(false);
-  }, [page, loading, hasMore]);
-
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting && hasMore && !loading) {
-          loadMoreCards();
-        }
-      },
-      { threshold: 0.1 }
-    );
-
-    const currentTarget = observerTarget.current;
-    if (currentTarget) {
-      observer.observe(currentTarget);
-    }
-
-    return () => {
-      if (currentTarget) {
-        observer.unobserve(currentTarget);
-      }
-    };
-  }, [loadMoreCards, hasMore, loading]);
 
   // 큐에서 다음 애니메이션 실행
   useEffect(() => {
@@ -94,10 +42,10 @@ export function ThanksCardWall({
         const completedCardId = nextCardId;
         setNewCardId(null);
         setIsAnimating(false);
-        setAnimationQueue((prev) => prev.slice(1));
+        onAnimationComplete(completedCardId);
       }, ANIMATION_DURATION);
     }
-  }, [animationQueue, isAnimating]);
+  }, [animationQueue, isAnimating, onAnimationComplete]);
 
   // 컴포넌트 언마운트 시에만 타이머 정리
   useEffect(() => {
@@ -106,30 +54,6 @@ export function ThanksCardWall({
         clearTimeout(animationTimeoutRef.current);
         animationTimeoutRef.current = null;
       }
-    };
-  }, []);
-
-  useEffect(() => {
-    const supabase = createClient();
-
-    const channel = supabase
-      .channel("thanks_cards_changes")
-      .on(
-        "postgres_changes",
-        { event: "INSERT", schema: "public", table: "thanks_cards" },
-        (payload) => {
-          const newCard = payload.new as ThanksCard;
-          setCards((prev) => [newCard, ...prev]);
-          setTotalCount((prev) => prev + 1);
-
-          // 새 카드를 큐에 추가
-          setAnimationQueue((prev) => [...prev, newCard.id]);
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
     };
   }, []);
 
@@ -230,16 +154,6 @@ export function ThanksCardWall({
                 </div>
               </div>
             ))}
-            {hasMore && (
-              <div
-                ref={observerTarget}
-                className="h-32 snap-start flex items-center justify-center"
-              >
-                {loading && (
-                  <Loader2 className="w-8 h-8 text-amber-600 animate-spin" />
-                )}
-              </div>
-            )}
           </div>
 
           {/* Desktop: Horizontal Scroll */}
@@ -257,16 +171,6 @@ export function ThanksCardWall({
                   />
                 </div>
               ))}
-              {hasMore && (
-                <div
-                  ref={observerTarget}
-                  className="flex-shrink-0 w-24 flex items-center justify-center"
-                >
-                  {loading && (
-                    <Loader2 className="w-8 h-8 sm:w-10 sm:h-10 text-amber-600 animate-spin" />
-                  )}
-                </div>
-              )}
             </div>
           </div>
         </div>

@@ -34,49 +34,6 @@ export function ThanksCardItem({
       className="group w-full h-full flex items-center justify-center"
     >
       <div className="relative w-full">
-        {/* 빛나는 글로우 효과 */}
-        {isNew && (
-          <>
-            {/* 외부 글로우 */}
-            <motion.div
-              className="absolute -inset-6 rounded-xl sm:rounded-2xl z-10"
-              initial={{ opacity: 0 }}
-              animate={{
-                opacity: [0, 0.8, 0.4, 0.8, 0],
-              }}
-              transition={{
-                duration: 3,
-                times: [0, 0.2, 0.5, 0.8, 1],
-                ease: "easeInOut",
-              }}
-              style={{
-                background:
-                  "radial-gradient(ellipse at center, rgba(251, 191, 36, 0.6) 0%, rgba(251, 191, 36, 0.3) 40%, transparent 70%)",
-                filter: "blur(8px)",
-              }}
-            />
-            {/* 중간 글로우 */}
-            <motion.div
-              className="absolute -inset-3 rounded-xl sm:rounded-2xl z-10"
-              initial={{ opacity: 0 }}
-              animate={{
-                opacity: [0, 0.6, 0.3, 0.6, 0],
-              }}
-              transition={{
-                duration: 3,
-                times: [0, 0.2, 0.5, 0.8, 1],
-                ease: "easeInOut",
-                delay: 0.1,
-              }}
-              style={{
-                background:
-                  "radial-gradient(ellipse at center, rgba(251, 191, 36, 0.4) 0%, rgba(251, 191, 36, 0.2) 50%, transparent 80%)",
-                filter: "blur(4px)",
-              }}
-            />
-          </>
-        )}
-
         <motion.div
           initial={isNew ? { scale: 0.8, opacity: 0 } : false}
           animate={
@@ -85,9 +42,8 @@ export function ThanksCardItem({
                   scale: [0.8, 1.05, 1, 1, 1],
                   opacity: [0, 1, 1, 1, 1],
                   y: [20, -10, -10, -10, 0],
-                  rotateZ: [0, -1, 1, -1, 0],
                 }
-              : { scale: 1, y: 0, rotateZ: 0, opacity: 1 }
+              : { scale: 1, y: 0, opacity: 1 }
           }
           transition={
             isNew
@@ -103,46 +59,6 @@ export function ThanksCardItem({
             isNew ? "shadow-2xl z-20" : ""
           }`}
         >
-          {/* 빛나는 효과 오버레이 */}
-          {isNew && (
-            <>
-              {/* 메인 빛나는 효과 */}
-              <motion.div
-                className="absolute inset-0 pointer-events-none z-30"
-                initial={{ opacity: 0 }}
-                animate={{
-                  opacity: [0, 0.6, 0.3, 0.6, 0],
-                }}
-                transition={{
-                  duration: 3,
-                  times: [0, 0.15, 0.5, 0.85, 1],
-                  ease: "easeInOut",
-                }}
-                style={{
-                  background:
-                    "radial-gradient(circle at center, rgba(251, 191, 36, 0.4) 0%, rgba(251, 191, 36, 0.2) 40%, transparent 70%)",
-                }}
-              />
-              {/* 반짝이는 효과 */}
-              <motion.div
-                className="absolute inset-0 pointer-events-none z-30"
-                initial={{ x: "-100%" }}
-                animate={{
-                  x: ["100%", "200%"],
-                }}
-                transition={{
-                  duration: 1.5,
-                  delay: 0.5,
-                  ease: "easeInOut",
-                }}
-                style={{
-                  background:
-                    "linear-gradient(45deg, transparent 30%, rgba(255, 255, 255, 0.6) 50%, transparent 70%)",
-                  width: "200%",
-                }}
-              />
-            </>
-          )}
           {/* Author Name Section - Emphasized at top */}
           <div className="bg-gradient-to-r from-white/40 to-amber-100/40 backdrop-blur-sm px-4 sm:px-5 md:px-6 py-4 sm:py-5 border-b border-white/20">
             <div className="flex items-center justify-between mb-1 sm:mb-2">
