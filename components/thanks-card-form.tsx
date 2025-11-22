@@ -129,7 +129,7 @@ export function ThanksCardForm() {
           value={name}
           onChange={(e) => setName(e.target.value)}
           maxLength={100}
-          className="text-base sm:text-lg h-11 sm:h-12 border-2 border-stone-300 focus:border-amber-500"
+          className="text-base sm:text-lg h-11 sm:h-12 border-2 border-stone-300 focus:border-amber-500 text-stone-700"
           disabled={isSubmitting}
         />
       </div>
@@ -154,7 +154,7 @@ export function ThanksCardForm() {
           className="text-base sm:text-lg resize-none border-2 border-stone-300 focus:border-amber-500 leading-relaxed"
           disabled={isSubmitting}
         />
-        <p className="text-sm sm:text-base text-stone-500 text-right font-medium">
+        <p className="text-sm sm:text-base text-stone-700 text-right font-medium">
           {title.length}/50
         </p>
       </div>

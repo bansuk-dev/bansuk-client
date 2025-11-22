@@ -29,6 +29,13 @@ export function TestThanksCardWall({
   const [animationKey, setAnimationKey] = useState(0); // 애니메이션 키 추가
   const animationTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
+  // 안전한 카드 번호 계산 함수
+  const getCardNumber = useCallback((cardIndex: number, currentTotalCount: number) => {
+    // 카드 번호는 최소 1부터 시작하며, 음수가 되지 않도록 보장
+    const calculatedNumber = currentTotalCount - cardIndex;
+    return Math.max(1, calculatedNumber);
+  }, []);
+
   // 큐에서 다음 애니메이션 실행
   useEffect(() => {
     if (animationQueue.length > 0 && !isAnimating) {
@@ -83,10 +90,10 @@ export function TestThanksCardWall({
                 <ThanksCardItem
                   key={`new-card-${newCardId}-${animationKey}`} // 애니메이션 키로 강제 리마운트
                   card={cards.find((card) => card.id === newCardId)!}
-                  cardNumber={
-                    totalCount -
-                    cards.findIndex((card) => card.id === newCardId)
-                  }
+                  cardNumber={getCardNumber(
+                    cards.findIndex((card) => card.id === newCardId),
+                    totalCount
+                  )}
                   isNew={true}
                 />
               )}
@@ -148,7 +155,7 @@ export function TestThanksCardWall({
                 <div className="w-full max-w-md">
                   <ThanksCardItem
                     card={card}
-                    cardNumber={totalCount - index}
+                    cardNumber={getCardNumber(index, totalCount)}
                     isNew={false}
                   />
                 </div>
@@ -166,7 +173,7 @@ export function TestThanksCardWall({
                 >
                   <ThanksCardItem
                     card={card}
-                    cardNumber={totalCount - index}
+                    cardNumber={getCardNumber(index, totalCount)}
                     isNew={false}
                   />
                 </div>
