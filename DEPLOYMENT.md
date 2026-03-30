@@ -1,137 +1,131 @@
-# Vercel 배포 가이드
+# 배포 및 운영 반영 가이드
 
-## 사전 준비사항
+## 개요
 
-1. Vercel 계정 생성 (https://vercel.com)
-2. Supabase 프로젝트 설정 완료
+이 프로젝트는 앱 배포와 DB 반영을 분리합니다.
 
-## 배포 단계
+- **앱 배포**: Vercel
+- **DB 반영**: GitHub Actions + Supabase CLI
 
-### 1. Vercel CLI 설치 (선택사항)
+운영 데이터베이스 변경은 반드시 `supabase/migrations`를 통해서만 반영합니다.
 
-```bash
-npm i -g vercel
-```
+로컬 개발과 CI 모두 최신 Supabase CLI 사용을 권장합니다. 오래된 CLI는 최신 이미지와 조합될 때 `supabase start` 또는 `supabase db reset`이 비정상적으로 오래 걸릴 수 있습니다.
 
-### 2. Vercel에 프로젝트 연결
+## 1. 새 Supabase 프로젝트 준비
 
-#### 방법 1: Vercel 웹사이트 사용
-
-1. Vercel 대시보드 접속 (https://vercel.com/dashboard)
-2. "New Project" 버튼 클릭
-3. GitHub/GitLab/Bitbucket 저장소 연결
-4. 프로젝트 저장소 선택
-5. 프레임워크 프리셋이 자동으로 "Next.js"로 감지되는지 확인
-
-#### 방법 2: Vercel CLI 사용
+1. Supabase에서 새 프로젝트를 생성합니다.
+2. 아래 값을 안전한 곳에 보관합니다.
 
 ```bash
-vercel
+NEXT_PUBLIC_SUPABASE_URL
+NEXT_PUBLIC_SUPABASE_ANON_KEY
+SUPABASE_SERVICE_ROLE_KEY
+SUPABASE_PROJECT_ID
+SUPABASE_DB_PASSWORD
 ```
 
-### 3. 환경 변수 설정
+3. Supabase Personal Access Token을 생성합니다.
 
-Vercel 프로젝트 설정에서 다음 환경 변수를 추가해야 합니다:
-
-#### Vercel 대시보드에서 설정:
-
-1. Project Settings > Environment Variables로 이동
-2. 다음 변수들을 추가:
-
+```bash
+SUPABASE_ACCESS_TOKEN
 ```
+
+## 2. Vercel 환경 변수 설정
+
+Vercel Project Settings > Environment Variables에 아래 값을 등록합니다.
+
+```bash
 NEXT_PUBLIC_SUPABASE_URL=your_supabase_project_url
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
 ```
 
-#### CLI로 설정:
+현재 앱은 public storage URL을 사용하므로, 운영 프로젝트에서도 `photos` 버킷은 public 정책을 유지해야 합니다.
+
+## 3. GitHub Actions Secrets 설정
+
+GitHub 저장소 Settings > Secrets and variables > Actions에 아래 secrets를 추가합니다.
 
 ```bash
-vercel env add NEXT_PUBLIC_SUPABASE_URL
-vercel env add NEXT_PUBLIC_SUPABASE_ANON_KEY
+SUPABASE_ACCESS_TOKEN=your_supabase_access_token
+SUPABASE_PROJECT_ID=your_supabase_project_id
+SUPABASE_DB_PASSWORD=your_database_password
 ```
 
-### 4. 빌드 및 배포 설정
+이 값이 모두 있을 때만 `main` 브랜치 push 시 운영 migration 반영 job이 실행됩니다.
 
-프로젝트 설정에서 다음을 확인:
+## 4. 운영 반영 흐름
 
-- **Framework Preset**: Next.js
-- **Build Command**: `npm run build`
-- **Output Directory**: `.next` (자동 설정됨)
-- **Install Command**: `npm install`
-- **Development Command**: `npm run dev`
+### PR 단계
 
-### 5. 배포
+PR에서 `supabase/**` 변경이 있으면 아래 검증이 실행됩니다.
 
-#### 자동 배포 (권장)
+1. `supabase start`
+2. `supabase db reset`
+3. 전체 migration이 빈 로컬 DB에서 재적용 가능한지 확인
 
-- main/master 브랜치에 푸시하면 자동으로 프로덕션 배포
-- 다른 브랜치에 푸시하면 프리뷰 배포 생성
+### main 반영 단계
 
-#### 수동 배포
+`main`에 merge되고 필요한 secrets가 설정되어 있으면 아래 순서로 운영 반영이 실행됩니다.
+
+1. Supabase CLI 인증
+2. 대상 프로젝트 link
+3. `supabase db push --include-all`
+
+운영 DB 반영 실패 시 앱 배포와 분리되어 영향 범위를 줄일 수 있습니다.
+
+## 5. 변경 작업 표준 절차
+
+### 새로운 DB 변경 만들기
 
 ```bash
-vercel --prod
+supabase migration new your_change_name
 ```
 
-## 배포 후 확인사항
-
-1. **Supabase Storage 정책 확인**
-
-   - Storage 버킷의 공개 정책이 올바르게 설정되어 있는지 확인
-   - RLS (Row Level Security) 정책이 올바르게 적용되어 있는지 확인
-
-2. **이미지 로딩 확인**
-
-   - Supabase Storage의 이미지가 올바르게 표시되는지 확인
-   - next.config.ts의 remotePatterns 설정이 올바른지 확인
-
-3. **도메인 설정 (선택사항)**
-   - Project Settings > Domains에서 커스텀 도메인 추가 가능
-
-## 주요 설정 파일
-
-- `vercel.json`: Vercel 배포 설정
-- `.vercelignore`: 배포 시 제외할 파일
-- `.env.example`: 환경 변수 예시 파일
-- `next.config.ts`: Next.js 설정 (이미지 도메인 등)
-
-## 트러블슈팅
-
-### 빌드 실패
-
-1. 로컬에서 `npm run build` 실행하여 빌드 오류 확인
-2. TypeScript 오류가 있는지 확인
-3. 모든 환경 변수가 설정되어 있는지 확인
-
-### 환경 변수 미적용
-
-1. Vercel 대시보드에서 환경 변수 다시 확인
-2. 배포를 다시 트리거 (Redeploy)
-
-### 이미지 로딩 실패
-
-1. Supabase Storage URL이 올바른지 확인
-2. next.config.ts의 remotePatterns 설정 확인
-3. Supabase Storage 버킷이 public으로 설정되어 있는지 확인
-
-## 유용한 명령어
+### 로컬 검증
 
 ```bash
-# 프로덕션 배포
-vercel --prod
-
-# 프리뷰 배포
-vercel
-
-# 환경 변수 목록 보기
-vercel env ls
-
-# 배포 로그 확인
-vercel logs [deployment-url]
-
-# 프로젝트 정보
-vercel inspect
+npm run supabase:start
+npm run db:reset
 ```
+
+### 앱 동작 확인
+
+- 카드 목록 조회
+- 카드 단건 조회
+- 카드 생성
+- 이미지 업로드
+- 업로드 이미지 렌더링
+- Realtime insert 반영
+
+## 6. 초기 운영 셋업 체크리스트
+
+- 새 Supabase 프로젝트 생성 완료
+- Vercel 환경 변수 등록 완료
+- GitHub Actions secrets 등록 완료
+- `main` 기준 migration 반영 완료
+- `thanks_cards` 테이블 생성 확인
+- `photos` 버킷 및 정책 생성 확인
+
+## 7. 트러블슈팅
+
+### 로컬 Supabase가 실행되지 않을 때
+
+- Docker Desktop이 실행 중인지 확인합니다.
+- `supabase --version`으로 CLI 설치를 확인합니다.
+
+### `db reset`이 실패할 때
+
+- migration SQL 문법 오류를 먼저 확인합니다.
+- 새 migration 추가 후 이전 migration을 수정하지 않았는지 확인합니다.
+
+### 운영 반영 job이 실행되지 않을 때
+
+- `SUPABASE_ACCESS_TOKEN`
+- `SUPABASE_PROJECT_ID`
+- `SUPABASE_DB_PASSWORD`
+
+위 3개 secrets가 모두 등록되어 있는지 확인합니다.
 
 ## 참고 링크
 
