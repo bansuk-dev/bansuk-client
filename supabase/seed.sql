@@ -1,0 +1,2 @@
+-- Seed data is intentionally empty.
+-- Add local-only fixtures here when needed.
