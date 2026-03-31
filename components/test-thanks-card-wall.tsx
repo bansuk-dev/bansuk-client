@@ -111,7 +111,7 @@ export function TestThanksCardWall({
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
             transition={{ duration: 0.3 }}
-            className="fixed top-4 left-1/2 transform -translate-x-1/2 z-[110] bg-amber-500 text-white px-6 py-3 rounded-full shadow-lg"
+            className="fixed top-4 left-1/2 transform -translate-x-1/2 z-[110] rounded-full bg-sky-500 px-6 py-3 text-white shadow-lg"
           >
             <p className="text-sm font-semibold">
               새로운 카드 {animationQueue.length - 1}개가 더 있어요! 🎉
@@ -123,7 +123,7 @@ export function TestThanksCardWall({
       <div
         className="min-h-screen flex flex-col"
         style={{
-          backgroundImage: `url('/images/bg-image.jpg')`,
+          backgroundImage: `url('/images/bg-flower.jpg')`,
           backgroundSize: "cover",
           backgroundPosition: "center",
           backgroundRepeat: "no-repeat",
@@ -135,14 +135,14 @@ export function TestThanksCardWall({
           <div className="text-center py-8 sm:py-10 lg:py-12 px-4 sm:px-6">
             <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-stone-800 mb-4 sm:mb-6 leading-relaxed">
               오늘까지 총{" "}
-              <span className="text-amber-700">
+              <span className="text-sky-700">
                 {totalCount.toLocaleString()}
               </span>
               개의
               <br />
               감사카드가 만들어졌어요
             </h1>
-            <div className="w-20 sm:w-24 h-1 bg-amber-600 mx-auto rounded-full" />
+            <div className="mx-auto h-1 w-20 rounded-full bg-sky-600 sm:w-24" />
           </div>
 
           {/* Mobile: Vertical Short-form Scroll (Full Screen Snap) */}
@@ -183,7 +183,7 @@ export function TestThanksCardWall({
         </div>
 
         {/* Desktop: QR Code Section - Fixed on the right */}
-        <div className="hidden lg:block fixed right-0 top-0 w-80 xl:w-96 h-screen bg-gradient-to-br from-stone-100 to-amber-100 border-l-4 border-amber-300">
+        <div className="fixed right-0 top-0 hidden h-screen w-80 border-l-4 border-sky-300 bg-gradient-to-br from-slate-50 to-sky-100 xl:w-96 lg:block">
           <div className="h-full flex flex-col items-center justify-center p-8 lg:p-10">
             <div className="text-center space-y-6 sm:space-y-8">
               <div className="space-y-3 sm:space-y-4">
@@ -192,10 +192,10 @@ export function TestThanksCardWall({
                   <br />
                   작성하기
                 </h2>
-                <div className="w-14 sm:w-16 h-1 bg-amber-600 mx-auto rounded-full" />
+                <div className="mx-auto h-1 w-14 rounded-full bg-sky-600 sm:w-16" />
               </div>
 
-              <div className="bg-white p-6 sm:p-8 rounded-2xl shadow-xl border-4 border-amber-200">
+              <div className="rounded-2xl border-4 border-sky-200 bg-white p-6 shadow-xl sm:p-8">
                 <Link href="/thanks-card/new">
                   <div className="w-40 h-40 sm:w-48 sm:h-48 bg-stone-100 rounded-xl flex items-center justify-center">
                     <Image
@@ -228,7 +228,7 @@ export function TestThanksCardWall({
       {/* Mobile: Floating Action Button */}
       <Link
         href="/thanks-card/new"
-        className="lg:hidden fixed bottom-6 right-6 w-16 h-16 bg-gradient-to-br from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 rounded-full shadow-2xl flex items-center justify-center transition-all duration-300 hover:scale-110 active:scale-95 z-50"
+        className="fixed bottom-6 right-6 z-50 flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-sky-500 to-sky-600 shadow-2xl transition-all duration-300 hover:scale-110 hover:from-sky-600 hover:to-sky-700 active:scale-95 lg:hidden"
       >
         <Plus className="w-8 h-8 text-white" strokeWidth={3} />
       </Link>

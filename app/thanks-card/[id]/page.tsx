@@ -19,7 +19,7 @@ export default async function ThanksCardDetailPage({ params }: PageProps) {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-stone-100 via-amber-50 to-emerald-50">
+    <div className="min-h-screen bg-gradient-to-br from-slate-100 via-sky-50 to-cyan-50">
       <ThanksCardDetail card={card} />
     </div>
   )
