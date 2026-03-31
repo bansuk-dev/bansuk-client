@@ -11,6 +11,7 @@ interface ThanksCardDisplayProps {
   showFullTitle?: boolean;
   priority?: boolean;
   className?: string;
+  compactMobile?: boolean;
 }
 
 export function ThanksCardDisplay({
@@ -19,6 +20,7 @@ export function ThanksCardDisplay({
   showFullTitle = false,
   priority = false,
   className = "",
+  compactMobile = false,
 }: ThanksCardDisplayProps) {
   const [imageLoaded, setImageLoaded] = useState(false);
   const [imageError, setImageError] = useState(false);
@@ -48,14 +50,24 @@ export function ThanksCardDisplay({
     <div
       className={`relative w-full overflow-hidden rounded-xl border border-white/30 bg-white/20 shadow-lg backdrop-blur-md sm:rounded-2xl ${className}`}
     >
-      <div className="border-b border-white/20 bg-gradient-to-r from-white/45 to-sky-100/45 px-4 py-4 backdrop-blur-sm sm:px-5 sm:py-5 md:px-6">
+      <div
+        className={`border-b border-white/20 bg-gradient-to-r from-white/45 to-sky-100/45 backdrop-blur-sm md:px-6 ${
+          compactMobile
+            ? "px-4 py-3 sm:px-5 sm:py-5"
+            : "px-4 py-4 sm:px-5 sm:py-5"
+        }`}
+      >
         <div className="mb-1 flex items-center justify-between sm:mb-2">
           <span className="text-xs font-semibold text-sky-700 sm:text-sm">
             {cardNumberLabel}
           </span>
           <span className="text-xs text-stone-600">{formattedTime}</span>
         </div>
-        <h3 className="mb-1 text-xl font-bold text-stone-900 drop-shadow-sm sm:text-2xl">
+        <h3
+          className={`mb-1 font-bold text-stone-900 drop-shadow-sm ${
+            compactMobile ? "text-lg sm:text-2xl" : "text-xl sm:text-2xl"
+          }`}
+        >
           {card.name}
         </h3>
         <p className="text-xs text-stone-700 drop-shadow-sm sm:text-sm">
@@ -107,18 +119,20 @@ export function ThanksCardDisplay({
       </div>
 
       <div
-        className={`bg-white/30 px-4 py-4 backdrop-blur-sm sm:px-5 sm:py-5 md:px-6 ${
+        className={`bg-white/30 backdrop-blur-sm md:px-6 ${
           showFullTitle
             ? ""
-            : "flex h-32 items-start overflow-hidden sm:h-36"
+            : compactMobile
+              ? "flex h-24 items-start overflow-hidden px-4 py-3 sm:h-36 sm:px-5 sm:py-5"
+              : "flex h-32 items-start overflow-hidden px-4 py-4 sm:h-36 sm:px-5 sm:py-5"
         }`}
       >
         <p
-          className={`text-base font-medium leading-relaxed text-stone-900 drop-shadow-sm sm:text-lg ${
+          className={`font-medium leading-relaxed text-stone-900 drop-shadow-sm ${
             showFullTitle
               ? "whitespace-pre-wrap break-words"
               : "line-clamp-3"
-          }`}
+          } ${compactMobile ? "text-sm sm:text-lg" : "text-base sm:text-lg"}`}
         >
           {card.title}
         </p>
