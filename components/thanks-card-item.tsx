@@ -11,6 +11,8 @@ interface ThanksCardItemProps {
   cardNumber: number;
   isNew?: boolean;
   onImageLoaded?: () => void;
+  compactMobile?: boolean;
+  fillHeight?: boolean;
 }
 
 export function ThanksCardItem({
@@ -18,6 +20,8 @@ export function ThanksCardItem({
   cardNumber,
   isNew,
   onImageLoaded,
+  compactMobile = false,
+  fillHeight = true,
 }: ThanksCardItemProps) {
   const [shouldAnimate, setShouldAnimate] = useState(false);
 
@@ -34,7 +38,9 @@ export function ThanksCardItem({
   return (
     <Link
       href={`/thanks-card/${card.id}`}
-      className="group w-full h-full flex items-center justify-center"
+      className={`group flex w-full justify-center ${
+        fillHeight ? "h-full items-center" : "items-start"
+      }`}
     >
       <div className="relative w-full">
         <motion.div
@@ -68,6 +74,7 @@ export function ThanksCardItem({
             card={card}
             cardNumberLabel={`No. ${cardNumber}`}
             priority={isNew}
+            compactMobile={compactMobile}
           />
         </motion.div>
       </div>

@@ -5,7 +5,7 @@ import { createClient } from "@/lib/supabase/client";
 import type { ThanksCard } from "@/lib/types/thanks-card";
 import { ThanksCardItem } from "@/components/thanks-card-item";
 import { RandomThanksCardPicker } from "@/components/random-thanks-card-picker";
-import { Loader2, Plus, Shuffle } from "lucide-react";
+import { ChevronDown, Loader2, Plus, Shuffle } from "lucide-react";
 import Image from "next/image";
 import QRCode from "@/assets/QRcode/QR-thanks-card-new.png";
 import Link from "next/link";
@@ -46,6 +46,11 @@ export function ThanksCardWall({
   const [loading, setLoading] = useState(false);
   const [hasMore, setHasMore] = useState(initialCards.length >= CARDS_PER_PAGE);
   const observerTarget = useRef<HTMLDivElement>(null);
+  const mobileViewportRef = useRef<HTMLDivElement>(null);
+  const [mobileViewportSize, setMobileViewportSize] = useState({
+    width: 0,
+    height: 0,
+  });
 
   // 데스크탑 자동 스크롤 관련 state
   const [currentScrollIndex, setCurrentScrollIndex] = useState(0);
@@ -82,6 +87,17 @@ export function ThanksCardWall({
     const isDesktopSize = window.innerWidth >= 1024;
     setIsDesktop(isDesktopSize);
     return isDesktopSize;
+  }, []);
+
+  const getMobileCardWidth = useCallback((viewportWidth: number, viewportHeight: number) => {
+    const responsiveMaxWidth =
+      viewportWidth >= 420 ? 352 : viewportWidth >= 380 ? 328 : 304;
+
+    if (!viewportHeight) {
+      return responsiveMaxWidth;
+    }
+
+    return Math.min(responsiveMaxWidth, Math.max(220, viewportHeight - 220));
   }, []);
 
   const loadMoreCards = useCallback(async () => {
@@ -133,6 +149,43 @@ export function ThanksCardWall({
 
     return () => window.removeEventListener("resize", checkIsDesktop);
   }, [checkIsDesktop]);
+
+  useEffect(() => {
+    const element = mobileViewportRef.current;
+    if (!element) return;
+
+    const updateSize = () => {
+      setMobileViewportSize({
+        width: element.clientWidth,
+        height: element.clientHeight,
+      });
+    };
+
+    updateSize();
+
+    const resizeObserver = new ResizeObserver(() => {
+      updateSize();
+    });
+
+    resizeObserver.observe(element);
+    window.addEventListener("resize", updateSize);
+
+    return () => {
+      resizeObserver.disconnect();
+      window.removeEventListener("resize", updateSize);
+    };
+  }, []);
+
+  const mobileCardWidth = getMobileCardWidth(
+    mobileViewportSize.width,
+    mobileViewportSize.height
+  );
+  const mobileEstimatedCardHeight = mobileCardWidth + 220;
+  const mobileBottomGap =
+    mobileViewportSize.height > 0
+      ? mobileViewportSize.height - mobileEstimatedCardHeight - 24
+      : 0;
+  const showMobileSwipeHint = !isDesktop && cards.length > 1 && mobileBottomGap > 72;
 
   // QR 섹션 리사이저 핸들러들
   const handleResizeStart = useCallback(
@@ -568,33 +621,68 @@ export function ThanksCardWall({
           </div>
 
           {/* Mobile: Vertical Short-form Scroll (Full Screen Snap) */}
-          <div className="lg:hidden flex-1 min-h-0">
+          <div ref={mobileViewportRef} className="lg:hidden relative flex-1 min-h-0">
             <div className="h-full overflow-y-auto overscroll-y-contain snap-y snap-mandatory scrollbar-hide">
-            {cards.map((card, index) => (
-              <div
-                key={`mobile-${card.id}-${index}`}
-                className="flex h-full min-h-full shrink-0 snap-start snap-always items-center justify-center px-4 py-3"
-              >
-                <div className="w-full max-w-md">
-                  <ThanksCardItem
-                    card={card}
-                    cardNumber={getCardNumber(index, totalCount)}
-                    isNew={false}
-                  />
+              {cards.map((card, index) => {
+                return (
+                  <div
+                    key={`mobile-${card.id}-${index}`}
+                    className="flex shrink-0 snap-start snap-always items-start justify-center overflow-hidden px-4 pt-4 pb-4"
+                    style={{
+                      height: mobileViewportSize.height || undefined,
+                    }}
+                  >
+                    <div
+                      className="w-full"
+                      style={{
+                        maxWidth: `${mobileCardWidth}px`,
+                      }}
+                    >
+                      <ThanksCardItem
+                        card={card}
+                        cardNumber={getCardNumber(index, totalCount)}
+                        isNew={false}
+                        compactMobile={true}
+                        fillHeight={false}
+                      />
+                    </div>
+                  </div>
+                );
+              })}
+              {hasMore && (
+                <div
+                  ref={observerTarget}
+                  className="flex h-32 snap-start items-center justify-center"
+                >
+                  {loading && (
+                    <Loader2 className="h-8 w-8 animate-spin text-sky-600" />
+                  )}
                 </div>
-              </div>
-            ))}
-            {hasMore && (
-              <div
-                ref={observerTarget}
-                className="h-32 snap-start flex items-center justify-center"
-              >
-                {loading && (
-                  <Loader2 className="h-8 w-8 animate-spin text-sky-600" />
-                )}
-              </div>
-            )}
+              )}
             </div>
+
+            <AnimatePresence>
+              {showMobileSwipeHint && (
+                <motion.div
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: 8 }}
+                  className="pointer-events-none absolute bottom-5 left-1/2 z-20 -translate-x-1/2"
+                >
+                  <motion.div
+                    animate={{ y: [0, 6, 0], opacity: [0.5, 1, 0.5] }}
+                    transition={{
+                      duration: 1.3,
+                      repeat: Infinity,
+                      ease: "easeInOut",
+                    }}
+                    className="flex h-10 w-10 items-center justify-center rounded-full bg-black/45 text-white backdrop-blur-sm"
+                  >
+                    <ChevronDown className="h-5 w-5" />
+                  </motion.div>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
 
           {/* Desktop: Horizontal Scroll */}
