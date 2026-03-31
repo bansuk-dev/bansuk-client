@@ -4,12 +4,14 @@ import { useEffect, useState, useRef, useCallback } from "react";
 import { createClient } from "@/lib/supabase/client";
 import type { ThanksCard } from "@/lib/types/thanks-card";
 import { ThanksCardItem } from "@/components/thanks-card-item";
-import { Loader2, Plus } from "lucide-react";
+import { RandomThanksCardPicker } from "@/components/random-thanks-card-picker";
+import { Loader2, Plus, Shuffle } from "lucide-react";
 import Image from "next/image";
 import QRCode from "@/assets/QRcode/QR-thanks-card-new.png";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import CountUp from "react-countup";
+import { Button } from "@/components/ui/button";
 
 interface ThanksCardWallProps {
   initialCards: ThanksCard[];
@@ -27,6 +29,7 @@ export function ThanksCardWall({
 }: ThanksCardWallProps) {
   const [cards, setCards] = useState<ThanksCard[]>(initialCards);
   const [totalCount, setTotalCount] = useState(initialCount);
+  const [isRandomPickerOpen, setIsRandomPickerOpen] = useState(false);
 
   // 안전한 카드 번호 계산 함수
   const getCardNumber = useCallback(
@@ -456,6 +459,11 @@ export function ThanksCardWall({
 
   return (
     <>
+      <RandomThanksCardPicker
+        open={isRandomPickerOpen}
+        onClose={() => setIsRandomPickerOpen(false)}
+      />
+
       {/* 딤 처리 오버레이 + 중앙 카드 강조 */}
       <AnimatePresence mode="wait">
         {newCardId && showOverlay && (
@@ -502,7 +510,7 @@ export function ThanksCardWall({
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
             transition={{ duration: 0.3 }}
-            className="fixed top-4 left-1/2 transform -translate-x-1/2 z-[110] bg-amber-500 text-white px-6 py-3 rounded-full shadow-lg"
+            className="fixed top-4 left-1/2 transform -translate-x-1/2 z-[110] rounded-full bg-sky-500 px-6 py-3 text-white shadow-lg"
           >
             <p className="text-sm font-semibold">
               새로운 카드 {animationQueue.length - 1}개가 더 있어요! 🎉
@@ -512,9 +520,9 @@ export function ThanksCardWall({
       </AnimatePresence>
 
       <div
-        className="min-h-screen flex flex-col"
+        className="flex h-[100dvh] min-h-[100dvh] flex-col overflow-hidden lg:h-screen lg:min-h-screen"
         style={{
-          backgroundImage: `url('/images/bg-image.jpg')`,
+          backgroundImage: `url('/images/bg-flower.jpg')`,
           backgroundSize: "cover",
           backgroundPosition: "center",
           backgroundRepeat: "no-repeat",
@@ -522,16 +530,16 @@ export function ThanksCardWall({
       >
         {/* Cards Section */}
         <div
-          className="flex-1 flex flex-col lg:transition-all lg:duration-200"
+          className="flex flex-1 flex-col min-h-0 lg:transition-all lg:duration-200"
           style={{
             marginRight: isDesktop ? `${qrSectionWidth}vw` : "0",
           }}
         >
           {/* Title - Centered in remaining width */}
-          <div className="text-center py-8 sm:py-10 lg:py-12 px-4 sm:px-6">
+          <div className="shrink-0 px-4 py-4 text-center sm:px-6 sm:py-8 lg:py-12">
             <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-stone-800 mb-4 sm:mb-6 leading-relaxed">
               오늘까지 총{" "}
-              <span className="text-amber-700 inline-block min-w-[80px]">
+              <span className="inline-block min-w-[80px] text-sky-700">
                 <CountUp
                   key={countUpKey}
                   start={0}
@@ -544,15 +552,28 @@ export function ThanksCardWall({
               <br />
               감사카드가 만들어졌어요
             </h1>
-            <div className="w-20 sm:w-24 h-1 bg-amber-600 mx-auto rounded-full" />
+            <div className="mx-auto h-1 w-20 rounded-full bg-sky-600 sm:w-24" />
+            <div className="mt-4 flex justify-center sm:mt-6">
+              <Button
+                type="button"
+                onClick={() => setIsRandomPickerOpen(true)}
+                className="h-11 rounded-full bg-stone-900 px-6 text-sm font-semibold text-white hover:bg-stone-800 sm:h-12 sm:px-8 sm:text-base"
+              >
+                <>
+                  <Shuffle className="h-4 w-4" />
+                  감사카드 랜덤뽑기
+                </>
+              </Button>
+            </div>
           </div>
 
           {/* Mobile: Vertical Short-form Scroll (Full Screen Snap) */}
-          <div className="lg:hidden h-[calc(100vh-200px)] overflow-y-auto snap-y snap-mandatory scrollbar-hide">
+          <div className="lg:hidden flex-1 min-h-0">
+            <div className="h-full overflow-y-auto overscroll-y-contain snap-y snap-mandatory scrollbar-hide">
             {cards.map((card, index) => (
               <div
                 key={`mobile-${card.id}-${index}`}
-                className="min-h-[calc(100vh-200px)] snap-start snap-always flex items-center justify-center px-4 py-4"
+                className="flex h-full min-h-full shrink-0 snap-start snap-always items-center justify-center px-4 py-3"
               >
                 <div className="w-full max-w-md">
                   <ThanksCardItem
@@ -569,16 +590,17 @@ export function ThanksCardWall({
                 className="h-32 snap-start flex items-center justify-center"
               >
                 {loading && (
-                  <Loader2 className="w-8 h-8 text-amber-600 animate-spin" />
+                  <Loader2 className="h-8 w-8 animate-spin text-sky-600" />
                 )}
               </div>
             )}
+            </div>
           </div>
 
           {/* Desktop: Horizontal Scroll */}
           <div
             ref={scrollContainerRef}
-            className="hidden lg:block flex-1 overflow-x-auto px-4 sm:px-6 md:px-8 lg:px-10 xl:px-12 pb-12 pt-4 scrollbar-hide"
+            className="hidden lg:block flex-1 min-h-0 overflow-x-auto overflow-y-hidden px-4 sm:px-6 md:px-8 lg:px-10 xl:px-12 pb-6 pt-4 scrollbar-hide"
             onScroll={handleUserScroll}
           >
             <div className="flex gap-4 sm:gap-6 md:gap-7 lg:gap-8 scrollbar-hide">
@@ -600,7 +622,7 @@ export function ThanksCardWall({
                   className="flex-shrink-0 w-24 flex items-center justify-center"
                 >
                   {loading && (
-                    <Loader2 className="w-8 h-8 sm:w-10 sm:h-10 text-amber-600 animate-spin" />
+                    <Loader2 className="h-8 w-8 animate-spin text-sky-600 sm:h-10 sm:w-10" />
                   )}
                 </div>
               )}
@@ -608,7 +630,7 @@ export function ThanksCardWall({
           </div>
           {/* 데스크탑 자동 스크롤 컨트롤 */}
           {isDesktop && (
-            <div className="flex items-center gap-4 pb-6 px-4 ml-8 flex-shrink-0">
+            <div className="flex items-center gap-4 px-4 pb-4 ml-8 flex-shrink-0">
               {/* 진행 상황 표시 */}
               {cards.length > 0 && (
                 <div className="bg-black/70 text-white px-6 py-3 rounded-full text-sm font-medium">
@@ -657,17 +679,17 @@ export function ThanksCardWall({
 
         {/* Desktop: QR Code Section - Fixed on the right */}
         <div
-          className="hidden lg:block fixed right-0 top-0 h-screen bg-gradient-to-br from-stone-100 to-amber-100 border-l-4 border-amber-300 transition-all duration-200"
+          className="fixed right-0 top-0 hidden h-screen border-l-4 border-sky-300 bg-gradient-to-br from-slate-50 to-sky-100 transition-all duration-200 lg:block"
           style={{
             width: `${qrSectionWidth}vw`,
           }}
         >
           {/* 리사이저 핸들 */}
           <div
-            className="absolute left-0 top-0 w-2 h-full cursor-col-resize bg-transparent hover:bg-amber-400/30 transition-colors duration-200 group flex items-center justify-center"
+            className="absolute left-0 top-0 flex h-full w-2 cursor-col-resize items-center justify-center bg-transparent transition-colors duration-200 group hover:bg-sky-400/30"
             onMouseDown={handleResizeStart}
           >
-            <div className="w-1 h-16 bg-amber-600/40 rounded-full group-hover:bg-amber-600/70 transition-colors duration-200" />
+            <div className="h-16 w-1 rounded-full bg-sky-600/40 transition-colors duration-200 group-hover:bg-sky-600/70" />
           </div>
 
           <div className="h-full flex flex-col items-center justify-center p-8 lg:p-10">
@@ -678,10 +700,10 @@ export function ThanksCardWall({
                   <br />
                   작성하기
                 </h2>
-                <div className="w-14 sm:w-16 h-1 bg-amber-600 mx-auto rounded-full" />
+                <div className="mx-auto h-1 w-14 rounded-full bg-sky-600 sm:w-16" />
               </div>
 
-              <div className="bg-white aspect-square p-6 sm:p-8 rounded-2xl shadow-xl border-4 border-amber-200">
+              <div className="aspect-square rounded-2xl border-4 border-sky-200 bg-white p-6 shadow-xl sm:p-8">
                 <Link
                   href="/thanks-card/new"
                   className="w-full h-full inline-block"
@@ -716,7 +738,7 @@ export function ThanksCardWall({
       {/* Mobile: Floating Action Button */}
       <Link
         href="/thanks-card/new"
-        className="lg:hidden fixed bottom-6 right-6 w-16 h-16 bg-gradient-to-br from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 rounded-full shadow-2xl flex items-center justify-center transition-all duration-300 hover:scale-110 active:scale-95 z-50"
+        className="fixed bottom-6 right-6 z-50 flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-sky-500 to-sky-600 shadow-2xl transition-all duration-300 hover:scale-110 hover:from-sky-600 hover:to-sky-700 active:scale-95 lg:hidden"
       >
         <Plus className="w-8 h-8 text-white" strokeWidth={3} />
       </Link>

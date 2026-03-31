@@ -47,7 +47,7 @@ export function ThanksCardForm() {
 
     try {
       const supabase = createClient();
-      let photoUrl = "/assets/default-image.jpg"; // 기본 이미지 경로
+      let photoUrl = "/assets/bible.jpg"; // 기본 이미지 경로
 
       // 사진이 있는 경우에만 업로드
       if (photoFile) {
@@ -129,7 +129,7 @@ export function ThanksCardForm() {
           value={name}
           onChange={(e) => setName(e.target.value)}
           maxLength={100}
-          className="text-base sm:text-lg h-11 sm:h-12 border-2 border-stone-300 focus:border-amber-500 text-stone-700"
+          className="h-11 border-2 border-stone-300 text-base text-stone-700 focus:border-sky-500 sm:h-12 sm:text-lg"
           disabled={isSubmitting}
         />
       </div>
@@ -151,7 +151,7 @@ export function ThanksCardForm() {
           onChange={(e) => setTitle(e.target.value)}
           maxLength={50}
           rows={4}
-          className="text-base sm:text-lg resize-none border-2 border-stone-300 focus:border-amber-500 leading-relaxed"
+          className="resize-none border-2 border-stone-300 text-base leading-relaxed focus:border-sky-500 sm:text-lg"
           disabled={isSubmitting}
         />
         <p className="text-sm sm:text-base text-stone-700 text-right font-medium">
@@ -183,7 +183,7 @@ export function ThanksCardForm() {
             className={`flex flex-col items-center justify-center w-full h-48 sm:h-56 rounded-xl sm:rounded-2xl cursor-pointer transition-all ${
               photoPreview
                 ? "border-0"
-                : "border-3 border-dashed border-stone-300 hover:border-amber-500 hover:bg-amber-50/50 bg-stone-50"
+                : "border-3 border-dashed border-stone-300 bg-stone-50 hover:border-sky-500 hover:bg-sky-50/50"
             }`}
           >
             {photoPreview ? (
@@ -197,7 +197,7 @@ export function ThanksCardForm() {
               </div>
             ) : (
               <div className="flex flex-col items-center gap-2 sm:gap-3">
-                <Camera className="w-12 h-12 sm:w-16 sm:h-16 text-amber-600" />
+                <Camera className="h-12 w-12 text-sky-600 sm:h-16 sm:w-16" />
                 <p className="text-stone-700 font-bold text-base sm:text-lg">
                   사진을 선택해주세요
                 </p>
@@ -218,7 +218,7 @@ export function ThanksCardForm() {
 
       <Button
         type="submit"
-        className="w-full h-12 sm:h-14 text-lg sm:text-xl font-bold bg-amber-600 hover:bg-amber-700 text-white shadow-lg disabled:bg-gray-400 disabled:cursor-not-allowed"
+        className="h-12 w-full bg-sky-600 text-lg font-bold text-white shadow-lg hover:bg-sky-700 disabled:cursor-not-allowed disabled:bg-gray-400 sm:h-14 sm:text-xl"
         disabled={isSubmitting || !name.trim() || !title.trim()}
       >
         {isSubmitting ? (
