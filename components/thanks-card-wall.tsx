@@ -591,7 +591,9 @@ export function ThanksCardWall({
           {/* Title - Centered in remaining width */}
           <div className="shrink-0 px-4 py-4 text-center sm:px-6 sm:py-8 lg:py-12">
             <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-stone-800 mb-4 sm:mb-6 leading-relaxed">
-              오늘까지 총{" "}
+              빛을 들고 세상으로
+              <br />
+              총{" "}
               <span className="inline-block min-w-[80px] text-sky-700">
                 <CountUp
                   key={countUpKey}
@@ -601,9 +603,7 @@ export function ThanksCardWall({
                   separator=","
                 />
               </span>
-              개의
-              <br />
-              감사카드가 만들어졌어요
+              개의 사진이 공유되었어요
             </h1>
             <div className="mx-auto h-1 w-20 rounded-full bg-sky-600 sm:w-24" />
             <div className="mt-4 flex justify-center sm:mt-6">

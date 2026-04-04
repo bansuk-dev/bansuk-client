@@ -39,7 +39,7 @@ export function ThanksCardForm() {
     setError(null);
 
     if (title.length > 50) {
-      setError("감사 제목은 50자 이내로 입력해주세요");
+      setError("감사 내용은 50자 이내로 입력해주세요");
       return;
     }
 
@@ -139,7 +139,7 @@ export function ThanksCardForm() {
           htmlFor="title"
           className="text-stone-700 font-bold text-base sm:text-lg"
         >
-          감사 제목 <span className="text-red-500">*</span>{" "}
+          감사 내용 <span className="text-red-500">*</span>{" "}
           <span className="text-sm sm:text-base text-stone-500 font-normal">
             (최대 50자)
           </span>

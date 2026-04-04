@@ -134,13 +134,13 @@ export function TestThanksCardWall({
           {/* Title - Centered in remaining width */}
           <div className="text-center py-8 sm:py-10 lg:py-12 px-4 sm:px-6">
             <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-stone-800 mb-4 sm:mb-6 leading-relaxed">
-              오늘까지 총{" "}
+              빛을 들고 세상으로
+              <br />
+              총{" "}
               <span className="text-sky-700">
                 {totalCount.toLocaleString()}
               </span>
-              개의
-              <br />
-              감사카드가 만들어졌어요
+              개의 사진이 공유되었어요
             </h1>
             <div className="mx-auto h-1 w-20 rounded-full bg-sky-600 sm:w-24" />
           </div>
