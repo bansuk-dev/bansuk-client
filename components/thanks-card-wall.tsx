@@ -45,8 +45,9 @@ export function ThanksCardWall({
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(false);
   const [hasMore, setHasMore] = useState(initialCards.length >= CARDS_PER_PAGE);
-  const observerTarget = useRef<HTMLDivElement>(null);
+  const mobileObserverTargetRef = useRef<HTMLDivElement>(null);
   const mobileViewportRef = useRef<HTMLDivElement>(null);
+  const mobileScrollContainerRef = useRef<HTMLDivElement>(null);
   const [mobileViewportSize, setMobileViewportSize] = useState({
     width: 0,
     height: 0,
@@ -57,6 +58,7 @@ export function ThanksCardWall({
   const [autoScrollEnabled, setAutoScrollEnabled] = useState(true);
   const [isDesktop, setIsDesktop] = useState(false);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const desktopObserverTargetRef = useRef<HTMLDivElement>(null);
   const autoScrollTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const userScrollTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const scrollDebounceRef = useRef<NodeJS.Timeout | null>(null);
@@ -353,26 +355,34 @@ export function ThanksCardWall({
   }, [isDesktop]);
 
   useEffect(() => {
+    const root = isDesktop
+      ? scrollContainerRef.current
+      : mobileScrollContainerRef.current;
+    const target = isDesktop
+      ? desktopObserverTargetRef.current
+      : mobileObserverTargetRef.current;
+
+    if (!root || !target) return;
+
     const observer = new IntersectionObserver(
       (entries) => {
         if (entries[0].isIntersecting && hasMore && !loading) {
           loadMoreCards();
         }
       },
-      { threshold: 0.1 }
+      {
+        root,
+        threshold: 0.1,
+      }
     );
 
-    const currentTarget = observerTarget.current;
-    if (currentTarget) {
-      observer.observe(currentTarget);
-    }
+    observer.observe(target);
 
     return () => {
-      if (currentTarget) {
-        observer.unobserve(currentTarget);
-      }
+      observer.unobserve(target);
+      observer.disconnect();
     };
-  }, [loadMoreCards, hasMore, loading]);
+  }, [isDesktop, loadMoreCards, hasMore, loading]);
 
   // 이미지 로딩 완료 콜백
   const handleImageLoaded = () => {
@@ -622,7 +632,10 @@ export function ThanksCardWall({
 
           {/* Mobile: Vertical Short-form Scroll (Full Screen Snap) */}
           <div ref={mobileViewportRef} className="lg:hidden relative flex-1 min-h-0">
-            <div className="h-full overflow-y-auto overscroll-y-contain snap-y snap-mandatory scrollbar-hide">
+            <div
+              ref={mobileScrollContainerRef}
+              className="h-full overflow-y-auto overscroll-y-contain snap-y snap-mandatory scrollbar-hide"
+            >
               {cards.map((card, index) => {
                 return (
                   <div
@@ -651,7 +664,7 @@ export function ThanksCardWall({
               })}
               {hasMore && (
                 <div
-                  ref={observerTarget}
+                  ref={mobileObserverTargetRef}
                   className="flex h-32 snap-start items-center justify-center"
                 >
                   {loading && (
@@ -706,7 +719,7 @@ export function ThanksCardWall({
               ))}
               {hasMore && (
                 <div
-                  ref={observerTarget}
+                  ref={desktopObserverTargetRef}
                   className="flex-shrink-0 w-24 flex items-center justify-center"
                 >
                   {loading && (
